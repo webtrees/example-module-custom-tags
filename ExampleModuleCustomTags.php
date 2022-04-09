@@ -8,7 +8,6 @@ declare(strict_types=1);
 
 namespace ExampleNamespace;
 
-use Fisharebest\Webtrees\Contracts\ElementInterface;
 use Fisharebest\Webtrees\Elements\AddressWebPage;
 use Fisharebest\Webtrees\Elements\CustomElement;
 use Fisharebest\Webtrees\Elements\EmptyElement;
@@ -18,9 +17,8 @@ use Fisharebest\Webtrees\Elements\SubmitterText;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Module\AbstractModule;
 use Fisharebest\Webtrees\Module\ModuleCustomInterface;
-use Fisharebest\Webtrees\Module\ModuleCustomTagsInterface;
-use Fisharebest\Webtrees\Module\ModuleCustomTagsTrait;
 use Fisharebest\Webtrees\Module\ModuleCustomTrait;
+use Fisharebest\Webtrees\Registry;
 
 /**
  * Class ExampleModuleCustomTags
@@ -30,11 +28,10 @@ use Fisharebest\Webtrees\Module\ModuleCustomTrait;
  *
  * Modules *must* implement ModuleCustomInterface.  They *may* also implement other interfaces.
  */
-class ExampleModuleCustomTags extends AbstractModule implements ModuleCustomTagsInterface, ModuleCustomInterface
+class ExampleModuleCustomTags extends AbstractModule implements ModuleCustomInterface
 {
     // For every module interface that is implemented, the corresponding trait *should* also use be used.
     use ModuleCustomTrait;
-    use ModuleCustomTagsTrait;
 
     /**
      * How should this module be identified in the control panel, etc.?
@@ -118,9 +115,19 @@ class ExampleModuleCustomTags extends AbstractModule implements ModuleCustomTags
     }
 
     /**
+     * Called for all *enabled* modules.
+     */
+    public function boot(): void
+    {
+        $elementFactory = Registry::elementFactory();
+        $elementFactory->registerTags($this->customTags());
+        $elementFactory->registerSubTags($this->customSubTags());
+    }
+    
+    /**
      * @return array<string,ElementInterface>
      */
-    public function customTags(): array
+    protected function customTags(): array
     {
         return [
             'FAM:DATA'       => new EmptyElement(I18N::translate('Data'), ['TEXT' => '0:1']),
@@ -139,7 +146,7 @@ class ExampleModuleCustomTags extends AbstractModule implements ModuleCustomTags
     /**
      * @return array<string,array<int,array<int,string>>>
      */
-    public function customSubTags(): array
+    protected function customSubTags(): array
     {
         return [
             'FAM'       => [['DATA', '0:M']],
